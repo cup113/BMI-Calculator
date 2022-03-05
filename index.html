@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta name="charset" content="UTF-8"/>
+	<meta name="generator" content="Visual Studio Code"/>
+	<meta name="author" content="Jason M. Li"/>
+	<meta name="description" content="BMI计算器是一个可以计算体重指数(BMI)的网站。它能够根据您的身高、体重（以及本站特有的年龄）判断您的BMI及类型、情况。">
+	<meta name="keywords" content="BMI,计算,体重指数,身高,体重,超重,肥胖,偏瘦"/>
+	<meta name="robots" content="index,follow"/>
+	<title>BMI计算器</title>
+	<link rel="shortcut icon" href="img/cube.ico" type="image/x-icon">
+	<link rel="stylesheet" href="Lib/footer.css">
+	<link rel="stylesheet" href="Lib/button.css">
+	<link rel="stylesheet" href="style/style.css"/>
+	<script src="Lib/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+	<div id="personal-infomation">
+		<h2>个人信息</h2>
+		<div class="pers-info-item">
+			<span>体重<strong style="color: orangered">(kg)</strong></span>
+			<span><input type="number" id="pers-info-weight" name="weight" min="0" step="0.1" placeholder="请输入..."></span>
+		</div>
+		<div class="pers-info-item">
+			<span>身高(cm)</span>
+			<span><input type="number" id="pers-info-height" name="height" min="50" max="300" step="0.5" placeholder="请输入..."></span>
+		</div>
+		<div class="pers-info-item">
+			<span>性别</span>
+			<span><select id="pers-info-gender" name="gender"><option value="1">男</option><option value="0">女</option></select></span>
+		</div>
+		<div class="pers-info-item">
+			<span title="四舍五入; 也可以写成: 年级数+6; 至少7岁">年龄(周岁)</span>
+			<span><input type="number" id="pers-info-age" name="age" min="6" step="1" placeholder="请输入..."></span>
+		</div>
+		<div id="pers-info-calc-outer"><button class="button-d" id="pers-info-calculate" onclick="calculate();">计算 Calculate</button></div>
+	</div>
+	<div id="info"></div>
+	<div id="result" class="none-display">
+		<h2>结果</h2>
+		<div id="res-progress">
+			<span id="res-progress-bar" style="--w: 0.1"></span
+			><span id="res-thin" class="res-square" style="--bgc: #8888ff;">
+				<span>偏瘦<br></span>
+				<span id="res-thin-range">BMI&lt;-<br></span>
+				<span id="res-thin-wrange">&lt;-kg</span>
+			</span
+			><span id="res-normal" class="res-square" style="--bgc: #88ff88;">
+				<span>正常<br></span>
+				<span id="res-normal-range">-&le;BMI&le;-<br></span>
+				<span id="res-normal-wrange">-kg~-kg</span>
+			</span
+			><span id="res-overweight" class="res-square" style="--bgc: #ffbb88;">
+				<span>超重<br></span>
+				<span id="res-overweight-range">-&lt;BMI&le;-<br></span>
+				<span id="res-overweight-wrange">-kg~-kg</span>
+			</span
+			><span id="res-obesity" class="res-square" style="--bgc: #ff8888;">
+				<span>肥胖<br></span>
+				<span id="res-obesity-range">BMI&ge;-<br></span>
+				<span id="res-obesity-wrange">&gt;-kg</span>
+			</span>
+		</div>
+		<div id="res-bmi" style="--color: #008800">
+			<span>BMI=</span><span id="res-bmi-value">--.--</span><span> | </span><span id="res-bmi-step">正常</span>
+		</div>
+	</div>
+	<footer></footer>
+	<script src="dist/footer.js"></script>
+	<script src="dist/init.js" charset="utf-8"></script>
+	<script src="dist/data.js"></script>
+	<script src="dist/calculator.js" charset="utf-8"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+@media screen and (max-width: 800px){
+    .pers-info-item {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 800px) {
+    .pers-info-item {
+        width: calc(50% - 10px);
+    }
+}
+
+#personal-infomation {
+    margin-bottom: 2em;
+}
+
+.pers-info-item {
+    display: inline-grid;
+    grid-template-columns: 50% 50%;
+    grid-template-areas: "name input";
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 4px;
+}
+
+.pers-info-item input, .pers-info-item select {
+    font-size: 1em;
+    width: 100%;
+}
+
+.pers-info-item>span:nth-child(1) {
+    grid-area: "name";
+}
+
+.pers-info-item>span:nth-child(2) {
+    grid-area: "input";
+}
+
+#pers-info-calc-outer {
+    text-align: right;
+}
+
+#pers-info-calculate {
+    font-size: 2em;
+    background-color: #008800;
+    color: white;
+}
+
+#info {
+    color: red;
+    font-size: 2.5em;
+}
+
+#res-progress-bar {
+    position: absolute;
+    z-index: 2;
+    background-color: #ffffff;
+    width: calc(var(--w) * calc(100vw - 32px));
+    height: 8em;
+    border-right: 4px solid gray;
+    box-sizing: border-box;
+    opacity: 0.5;
+    padding: 0;
+}
+
+.res-square {
+    display: inline-block;
+    height: 8em;
+    padding: 1em 0;
+    width: 25%;
+    box-sizing: border-box;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    text-align: center;
+    background-color: var(--bgc);
+}
+
+.res-square>span:nth-child(1) {
+    font-size: 2em;
+}
+
+.res-square>span:nth-child(2) {
+    font-size: 1.6em;
+}
+
+.res-square>span:nth-child(3) {
+    font-size: 1em;
+}
+
+#res-bmi {
+    font-size: 2em;
+    text-align: center;
+}
+
+#res-bmi>span {
+    vertical-align: middle;
+}
+
+#res-bmi-value {
+    font-size: 2em;
+    color: var(--color);
+}
+
+#res-bmi-step {
+    font-size: 1.5em;
+    color: var(--color);
+}
