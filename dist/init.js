@@ -1,3 +1,3 @@
 /// <reference path="./footer.ts"/>
-var Version = "2.0.0 (Dev)";
-generate_footer(Version, "", true);
+var Version = "2.0.1 (Beta)";
+generate_footer(Version, "https://github.com/cup113/BMI-Calculator/", true);
