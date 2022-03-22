@@ -29,11 +29,11 @@
 }
 
 .pers-info-item>span:nth-child(1) {
-    grid-area: "name";
+    grid-area: name;
 }
 
 .pers-info-item>span:nth-child(2) {
-    grid-area: "input";
+    grid-area: input;
 }
 
 #pers-info-calc-outer {
