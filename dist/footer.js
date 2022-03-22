@@ -9,7 +9,7 @@
  * @param year_end 最后更新年份
  * @param year_start 开始年份
  */
- function generate_footer(VERSION, github_url, info_detail, year_end, year_start) {
+function generate_footer(VERSION, github_url, info_detail, year_end, year_start) {
     if (info_detail === void 0) { info_detail = true; }
     if (year_end === void 0) { year_end = 0; }
     if (year_start === void 0) { year_start = 0; }
