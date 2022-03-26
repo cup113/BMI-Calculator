@@ -1,12 +1,15 @@
-@media screen and (max-width: 800px){
+@media screen and (max-width: 1000px){
     .pers-info-item {
         width: 100%;
     }
+    #res-progress {
+        font-size: 1.6vw;
+    }
 }
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 1000px) {
     .pers-info-item {
-        width: calc(50% - 10px);
+        width: calc(50% - 16px);
     }
 }
 
@@ -18,18 +21,18 @@
     display: inline-grid;
     grid-template-columns: 50% 50%;
     grid-template-areas: "name input";
-    text-align: center;
     font-size: 1.5em;
     margin-bottom: 4px;
 }
 
 .pers-info-item input, .pers-info-item select {
     font-size: 1em;
-    width: 100%;
+    width: 80%;
 }
 
 .pers-info-item>span:nth-child(1) {
     grid-area: name;
+    text-align: center;
 }
 
 .pers-info-item>span:nth-child(2) {
@@ -55,7 +58,7 @@
     position: absolute;
     z-index: 2;
     background-color: #ffffff;
-    width: calc(var(--w) * calc(100vw - 32px));
+    width: calc(var(--w) * calc(100vw - 16px));
     height: 8em;
     border-right: 4px solid gray;
     box-sizing: border-box;
