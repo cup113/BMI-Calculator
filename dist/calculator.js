@@ -72,5 +72,6 @@ function calculate() {
         $("#res-bmi").css("--color", ftcolors[step - 1]);
         $("#res-bmi-value").text(bmi.toFixed(2));
         $("#res-bmi-step").text(steps[step - 1]);
+        $("#info").text("");
     }
 }
