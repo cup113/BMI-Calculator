@@ -1,4 +1,4 @@
-/// <reference path="data.ts"/>
+/// <reference path="../src/data.ts"/>
 function err(text) {
     $("#info").text(text);
     var $result = $("#result");
