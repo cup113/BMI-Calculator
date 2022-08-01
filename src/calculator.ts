@@ -22,20 +22,14 @@ function calculate() {
 		var $result = $("#result"),
 		dataStepMap = (gender === 0)? dataStepFemale: dataStepFemale,
 		dataStepKeys = Object.keys(dataStepMap),
-		dataStepKey: number,
-		dataStep: number[],
+		dataStepKey: AgeNumber,
+		dataStep: number[] = [],
 		step: number, // 1偏瘦 2正常 3超重 4肥胖
 		progressSurp: number; // 多余的进度(0-1)
 		const steps = ["偏瘦", "正常", "超重", "肥胖"],
 		ftcolors = ["#0000ff", "#00ff00", "#ff8800", "#ff0000"];
-		// while (true) {
-		// 	dataStepKey = dataStepKeys.next();
-		// 	if (dataStepKey.done) break;
-		// 	if ((dataStepKey.value as number) <= age) dataStep = dataStepMap[dataStepKey.value as number];
-		// 	else break;
-		// }
 		for (let i of dataStepKeys) {
-			dataStepKey = parseInt(i);
+			dataStepKey = parseInt(i) as AgeNumber;
 			if (dataStepKey <= age) dataStep = dataStepMap[dataStepKey];
 			else break;
 		}

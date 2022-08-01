@@ -1,4 +1,4 @@
-var dataStepMale = {
+const dataStepMale = {
 	6: [13.3, 17.8, 20.2],
 	7: [13.5, 18.1, 20.3],
 	8: [13.7, 18.4, 20.4],
@@ -32,3 +32,5 @@ dataStepFemale = {
 	19: [17.2, 23.9, 27.9],
 	23: [17.5, 24, 28]
 };
+
+type AgeNumber = keyof typeof dataStepMale;

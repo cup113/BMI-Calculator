@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../src/data.ts"/>
 function err(text) {
     $("#info").text(text);
@@ -21,17 +22,10 @@ function calculate() {
     else if (age < 7)
         err("请输入大于等于7的年龄");
     else {
-        var $result = $("#result"), dataStepMap = (gender === 0) ? dataStepFemale : dataStepFemale, dataStepKeys = Object.keys(dataStepMap), dataStepKey, dataStep, step, // 1偏瘦 2正常 3超重 4肥胖
+        var $result = $("#result"), dataStepMap = (gender === 0) ? dataStepFemale : dataStepFemale, dataStepKeys = Object.keys(dataStepMap), dataStepKey, dataStep = [], step, // 1偏瘦 2正常 3超重 4肥胖
         progressSurp; // 多余的进度(0-1)
-        var steps = ["偏瘦", "正常", "超重", "肥胖"], ftcolors = ["#0000ff", "#00ff00", "#ff8800", "#ff0000"];
-        // while (true) {
-        // 	dataStepKey = dataStepKeys.next();
-        // 	if (dataStepKey.done) break;
-        // 	if ((dataStepKey.value as number) <= age) dataStep = dataStepMap[dataStepKey.value as number];
-        // 	else break;
-        // }
-        for (var _i = 0, dataStepKeys_1 = dataStepKeys; _i < dataStepKeys_1.length; _i++) {
-            var i = dataStepKeys_1[_i];
+        const steps = ["偏瘦", "正常", "超重", "肥胖"], ftcolors = ["#0000ff", "#00ff00", "#ff8800", "#ff0000"];
+        for (let i of dataStepKeys) {
             dataStepKey = parseInt(i);
             if (dataStepKey <= age)
                 dataStep = dataStepMap[dataStepKey];

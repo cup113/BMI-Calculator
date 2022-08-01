@@ -1,4 +1,5 @@
-var dataStepMale = {
+"use strict";
+const dataStepMale = {
     6: [13.3, 17.8, 20.2],
     7: [13.5, 18.1, 20.3],
     8: [13.7, 18.4, 20.4],
