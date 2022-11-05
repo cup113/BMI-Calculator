@@ -1,0 +1,13 @@
+{
+  "vueCompilerOptions": {
+    "plugins": [
+      "@volar/vue-language-plugin-pug"
+    ],
+    "strictTemplates": true
+  },
+  "compilerOptions": {
+    "lib": ["ES2015", "DOM"],
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

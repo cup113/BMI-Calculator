@@ -1,0 +1,16 @@
+{
+  "name": "bmi-calculator",
+  "version": "4.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^3.1.2",
+    "pug": "^3.0.0",
+    "@volar/vue-language-plugin-pug": "^1.0.8",
+    "vue": "^3.2.41"
+  }
+}
