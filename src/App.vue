@@ -194,7 +194,7 @@ div#report(v-if="submitted" :style='{"--result-color": progress.color}')
     div ({{ bmi_stage }})
 
 CustomizedFooter(remote-url="https://github.com/cup113/BMI-Calculator"
-version="v4.0.0" license="MIT" years="2022" detailed="true")
+version="v4.0.0" license="Apache 2.0" years="2022" detailed="true")
 </template>
 
 <style src="./assets/normalize.scss">
