@@ -104,8 +104,6 @@
         ],
     ]);
 
-    const stages = Array.from(bmiThresholds.keys());
-
     // 分组显示
     const stageGroups = [
         {
@@ -325,9 +323,9 @@
         <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
             <!-- 体重输入 -->
             <div class="mb-6">
-                <div class="block text-sm font-semibold text-slate-700 mb-3"
-                    >体重</div
-                >
+                <div class="block text-sm font-semibold text-slate-700 mb-3">
+                    体重
+                </div>
                 <div class="flex gap-2">
                     <div class="flex-1 relative">
                         <input
@@ -372,9 +370,9 @@
 
             <!-- 身高输入 -->
             <div class="mb-6">
-                <div class="block text-sm font-semibold text-slate-700 mb-3"
-                    >身高</div
-                >
+                <div class="block text-sm font-semibold text-slate-700 mb-3">
+                    身高
+                </div>
                 <div class="flex gap-2">
                     <input
                         type="number"
@@ -399,9 +397,9 @@
 
             <!-- 性别选择 -->
             <div class="mb-6">
-                <div class="block text-sm font-semibold text-slate-700 mb-3"
-                    >性别</div
-                >
+                <div class="block text-sm font-semibold text-slate-700 mb-3">
+                    性别
+                </div>
                 <div class="flex gap-3">
                     <button
                         onclick={() => (gender = "male")}
@@ -426,9 +424,9 @@
 
             <!-- 年级/阶段选择 - 改进的 UX -->
             <div class="mb-8 stage-picker-container relative">
-                <div class="block text-sm font-semibold text-slate-700 mb-3"
-                    >年级/阶段</div
-                >
+                <div class="block text-sm font-semibold text-slate-700 mb-3">
+                    年级/阶段
+                </div>
                 <button
                     onclick={() => (showStagePicker = !showStagePicker)}
                     class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white flex items-center justify-between"
@@ -617,25 +615,6 @@
                         >
                     </div>
                 </div>
-
-                <!-- 健康建议 -->
-                <div
-                    class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6"
-                >
-                    <p class="text-sm text-blue-900">
-                        {#if category.label === "偏瘦"}
-                            建议增加营养摄入，适度运动以增强体质。
-                        {:else if category.label === "正常"}
-                            很好！保持现在的生活方式，定期运动和均衡饮食。
-                        {:else if category.label === "超重"}
-                            建议适度增加运动量，控制饮食摄入，逐步调整体重。
-                        {:else}
-                            建议咨询医生或营养师，制定科学的减重计划。
-                        {/if}
-                    </p>
-                </div>
-
-                <!-- 重新计算按钮 -->
                 <button
                     onclick={handleReset}
                     class="w-full py-2 px-4 border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition"
