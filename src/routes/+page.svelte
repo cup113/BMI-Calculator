@@ -325,8 +325,8 @@
         <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
             <!-- 体重输入 -->
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-3"
-                    >体重</label
+                <div class="block text-sm font-semibold text-slate-700 mb-3"
+                    >体重</div
                 >
                 <div class="flex gap-2">
                     <div class="flex-1 relative">
@@ -372,8 +372,8 @@
 
             <!-- 身高输入 -->
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-3"
-                    >身高</label
+                <div class="block text-sm font-semibold text-slate-700 mb-3"
+                    >身高</div
                 >
                 <div class="flex gap-2">
                     <input
@@ -399,8 +399,8 @@
 
             <!-- 性别选择 -->
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-3"
-                    >性别</label
+                <div class="block text-sm font-semibold text-slate-700 mb-3"
+                    >性别</div
                 >
                 <div class="flex gap-3">
                     <button
@@ -426,8 +426,8 @@
 
             <!-- 年级/阶段选择 - 改进的 UX -->
             <div class="mb-8 stage-picker-container relative">
-                <label class="block text-sm font-semibold text-slate-700 mb-3"
-                    >年级/阶段</label
+                <div class="block text-sm font-semibold text-slate-700 mb-3"
+                    >年级/阶段</div
                 >
                 <button
                     onclick={() => (showStagePicker = !showStagePicker)}

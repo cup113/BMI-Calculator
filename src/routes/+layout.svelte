@@ -3,7 +3,6 @@
 	import favicon from '$lib/assets/favicon.ico';
 
 	let { children } = $props();
-	export const prerender = true
 </script>
 
 <svelte:head>
