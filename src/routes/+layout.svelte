@@ -3,6 +3,8 @@
 	import favicon from '$lib/assets/favicon.ico';
 
 	let { children } = $props();
+	const UMAMI_URL = "https://umami.cup11.top/script.js"
+	const UMAMI_WEBSITE_ID = "e777187b-38f3-4401-bbcf-068d447b70e9"
 </script>
 
 <svelte:head>
@@ -17,5 +19,7 @@
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:title" content="BMI 计算器 - 分龄健康体重评估" />
 	<meta name="twitter:description" content="免费在线 BMI 计算器，支持男女分龄评估，提供精准体重阈值参考。" />
+	<script defer src={UMAMI_URL} data-website-id={UMAMI_WEBSITE_ID}></script>
+	<title>BMI 计算器 - 分龄健康体重评估</title>
 </svelte:head>
 {@render children()}
