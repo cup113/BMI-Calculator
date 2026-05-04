@@ -1,72 +1,17 @@
 <script lang="ts">
-    /**
-     * BMI 阈值表格
-     * 格式：[男生 [偏瘦上限, 正常上限, 超重上限], 女生 [...]]
-     * 数据来源：教育部2014年标准 + 卫健委2013年成人标准
-     */
-    const bmiThresholds = new Map<
-        string,
-        [[number, number, number], [number, number, number]]
-    >([
-        ["一年级", [[13.5, 18.2, 20.4], [13.3, 17.4, 19.3]]],
-        ["二年级", [[13.7, 18.5, 20.5], [13.5, 17.9, 20.3]]],
-        ["三年级", [[13.9, 19.5, 22.2], [13.6, 18.7, 21.2]]],
-        ["四年级", [[14.2, 20.2, 22.7], [13.7, 19.5, 22.1]]],
-        ["五年级", [[14.4, 21.5, 22.8], [13.8, 20.6, 23.0]]],
-        ["六年级", [[14.7, 21.9, 24.3], [14.2, 20.9, 23.7]]],
-        ["七年级", [[15.5, 22.2, 24.6], [14.8, 21.8, 24.5]]],
-        ["八年级", [[15.7, 22.6, 25.0], [15.3, 22.3, 24.9]]],
-        ["九年级", [[15.8, 22.9, 25.3], [16.0, 22.7, 25.2]]],
-        ["高一", [[16.5, 23.3, 26.1], [16.5, 22.8, 25.3]]],
-        ["高二", [[16.8, 23.8, 26.4], [16.9, 23.3, 25.5]]],
-        ["高三", [[17.3, 23.9, 26.6], [17.1, 23.4, 25.8]]],
-        ["大学", [[17.9, 24.0, 27.4], [17.2, 24.0, 28.0]]],
-        ["成年", [[18.5, 24.0, 28.0], [18.5, 24.0, 28.0]]],
-    ]);
-
-    /** 年级分组显示配置 */
-    const stageGroups = [
-        { label: "小学", stages: ["一年级", "二年级", "三年级", "四年级", "五年级", "六年级"] },
-        { label: "初中", stages: ["七年级", "八年级", "九年级"] },
-        { label: "高中", stages: ["高一", "高二", "高三"] },
-        { label: "其他", stages: ["大学", "成年"] },
-    ];
-
-    /** BMI 分类配置 */
-    const categoryConfig = {
-        underweight: {
-            index: 0,
-            label: "偏瘦",
-            color: "bg-blue-500",
-            lightColor: "bg-blue-100",
-            textColor: "text-blue-600",
-            borderColor: "border-blue-500",
-        },
-        normal: {
-            index: 1,
-            label: "正常",
-            color: "bg-green-500",
-            lightColor: "bg-green-100",
-            textColor: "text-green-600",
-            borderColor: "border-green-500",
-        },
-        overweight: {
-            index: 2,
-            label: "超重",
-            color: "bg-amber-500",
-            lightColor: "bg-amber-100",
-            textColor: "text-amber-600",
-            borderColor: "border-amber-500",
-        },
-        obese: {
-            index: 3,
-            label: "肥胖",
-            color: "bg-red-500",
-            lightColor: "bg-red-100",
-            textColor: "text-red-600",
-            borderColor: "border-red-500",
-        },
-    };
+    import {
+        stageGroups,
+        categoryConfig,
+    } from "$lib/constants";
+    import {
+        calculateBMI,
+        getThresholds,
+        classifyBMI,
+        calculateWeightThresholds,
+        calculateSegmentWidths,
+        calculateBarPosition,
+        convertWeightText,
+    } from "$lib/bmi";
 
     let weight = $state<number | string>("");
     let height = $state<number | string>("");
@@ -78,112 +23,25 @@
     let showDataSources = $state(false);
 
     /** 单位转换显示 */
-    let convertedWeight = $derived.by(() => {
-        if (!weight || Number(weight) <= 0) return "";
-        const w = Number(weight);
-        return weightUnit === "kg" ? `= ${(w * 2).toFixed(1)} 斤` : `= ${(w / 2).toFixed(1)} kg`;
-    });
+    let convertedWeight = $derived(convertWeightText(Number(weight), weightUnit));
 
     /** BMI 计算 */
-    let bmi = $derived.by(() => {
-        if (!weight || !height) return null;
-
-        let weightKg = Number(weight);
-        if (weightUnit === "jin") weightKg = weightKg / 2;
-
-        const heightM = Number(height) / 100;
-        if (heightM <= 0 || weightKg <= 0) return null;
-
-        return Number((weightKg / (heightM * heightM)).toFixed(2));
-    });
+    let bmi = $derived(calculateBMI(Number(weight), Number(height), weightUnit));
 
     /** 当前选中年级/阶段的 BMI 阈值 */
-    let currentThresholds = $derived.by(() => {
-        const thresholds = bmiThresholds.get(stage);
-        if (!thresholds) return null;
-        const [maleThresholds, femaleThresholds] = thresholds;
-        return gender === "male" ? maleThresholds : femaleThresholds;
-    });
+    let currentThresholds = $derived(getThresholds(stage, gender));
 
     /** BMI 分类判断 */
-    let category = $derived.by(() => {
-        if (!bmi || !currentThresholds) return null;
-
-        const [under, normal, over] = currentThresholds;
-
-        if (bmi < under) return categoryConfig.underweight;
-        if (bmi < normal) return categoryConfig.normal;
-        if (bmi < over) return categoryConfig.overweight;
-        return categoryConfig.obese;
-    });
+    let category = $derived(classifyBMI(bmi, currentThresholds));
 
     /** 对应身高的体重阈值（kg） */
-    let weightThresholds = $derived.by(() => {
-        if (!height || !currentThresholds) return null;
-        const heightM = Number(height) / 100;
-        if (heightM <= 0) return null;
-        const [under, normal, over] = currentThresholds;
-        return {
-            underweightMax: (under * heightM * heightM).toFixed(1),
-            normalMax: (normal * heightM * heightM).toFixed(1),
-            overweightMax: (over * heightM * heightM).toFixed(1),
-        };
-    });
+    let weightThresholds = $derived(calculateWeightThresholds(Number(height), currentThresholds));
 
     /** 进度条各段宽度 - 当前段占70%，其他各占10% */
-    let segmentWidths = $derived.by(() => {
-        if (!category) return [10, 70, 10, 10];
-        const widths = [10, 10, 10, 10];
-        widths[category.index] = 70;
-        return widths;
-    });
+    let segmentWidths = $derived(calculateSegmentWidths(category));
 
     /** 进度条指针位置 */
-    let barPosition = $derived.by(() => {
-        if (!bmi || !currentThresholds || !category) return 0;
-
-        const [under, normal, over] = currentThresholds;
-        const currentIndex = category.index;
-
-        // 计算各段起始位置
-        const segmentPositions: number[] = [];
-        let pos = 0;
-        for (let i = 0; i < 4; i++) {
-            segmentPositions.push(pos);
-            pos += segmentWidths[i];
-        }
-
-        // 计算当前段的 BMI 范围
-        let segmentStart: number, segmentEnd: number;
-        switch (currentIndex) {
-            case 0:
-                segmentStart = Math.max(10, under - 5);
-                segmentEnd = under;
-                break;
-            case 1:
-                segmentStart = under;
-                segmentEnd = normal;
-                break;
-            case 2:
-                segmentStart = normal;
-                segmentEnd = over;
-                break;
-            case 3:
-                segmentStart = over;
-                segmentEnd = over + 7;
-                break;
-            default:
-                return 0;
-        }
-
-        const progress = Math.min(
-            Math.max((bmi - segmentStart) / (segmentEnd - segmentStart), 0),
-            1
-        );
-        const segmentWidth = segmentWidths[currentIndex];
-
-        return segmentPositions[currentIndex] + progress * segmentWidth;
-    });
+    let barPosition = $derived(calculateBarPosition(bmi, currentThresholds, category, segmentWidths));
 
     function handleCalculate() {
         const h = Number(height);
