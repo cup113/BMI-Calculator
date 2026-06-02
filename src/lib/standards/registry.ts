@@ -1,7 +1,6 @@
 import type { BmiStandard, BmiCategory } from "./types";
 import { whoAdultStandard } from "./who-adult";
 import { chinaAdultStandard } from "./china-adult";
-import { usAdultStandard } from "./us-adult";
 import { chinaElderlyStandard } from "./china-elderly";
 import { chinaStudentStandard } from "./china-student";
 import { whoChildStandard } from "./who-child";
@@ -11,7 +10,6 @@ const registry = new Map<string, BmiStandard>();
 const allStandards: BmiStandard[] = [
   whoAdultStandard,
   chinaAdultStandard,
-  usAdultStandard,
   chinaElderlyStandard,
   chinaStudentStandard,
   whoChildStandard,
@@ -38,6 +36,22 @@ export function getOrderedStandards(locale: string): BmiStandard[] {
 
 export function getDefaultStandardId(locale: string): string {
   return locale.startsWith("zh") ? "china-adult" : "who-adult";
+}
+
+export function getDefaultStandardIdForCategory(category: BmiCategory, locale: string): string {
+  if (locale.startsWith("zh")) {
+    switch (category) {
+      case "student": return "china-student";
+      case "adult":   return "china-adult";
+      case "senior":  return "china-elderly";
+    }
+  } else {
+    switch (category) {
+      case "student": return "who-child";
+      case "adult":   return "who-adult";
+      case "senior":  return "china-elderly";
+    }
+  }
 }
 
 const categories: BmiCategory[] = ["student", "adult", "senior"];

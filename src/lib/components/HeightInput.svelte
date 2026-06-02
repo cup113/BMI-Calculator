@@ -1,10 +1,6 @@
 <script lang="ts">
   import { m } from "$lib/paraglide/messages";
-
-  function t(key: string): string {
-    const fn = (m as Record<string, () => string>)[key];
-    return fn ? fn() : key;
-  }
+  import { t } from "$lib/i18n/t";
 
   let { height = $bindable("") }: {
     height: number | string;
@@ -12,7 +8,7 @@
 </script>
 
 <div class="mb-6">
-  <div class="block text-sm font-semibold text-slate-700 mb-3">
+  <div class="block text-sm font-semibold text-text-primary mb-3">
     {m.height()}
   </div>
   <div class="flex gap-2">
@@ -23,10 +19,10 @@
       step="0.5"
       min="50"
       max="300"
-      class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition"
+      class="flex-1 px-4 py-3 border-2 border-border rounded-lg bg-surface text-text-primary focus:outline-none focus:border-blue-500 transition"
     />
     <span
-      class="flex items-center px-4 py-3 bg-slate-100 rounded-lg text-slate-600 font-medium"
+      class="flex items-center px-4 py-3 bg-surface-alt rounded-lg text-text-secondary font-medium"
     >
       cm
     </span>

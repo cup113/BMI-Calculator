@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.1.0] — 2026-06-02
+
+### Miscellaneous
+
+- Bump minor version with no functional changes.
+
 ## [5.0.0] — 2026-06-02
 
 ### Migration
@@ -27,4 +33,5 @@
 
 - **Vitest unit testing** — 40 unit tests covering all core BMI calculation, threshold lookup, classification, and position logic.
 
+[5.1.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.1.0
 [5.0.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.0.0

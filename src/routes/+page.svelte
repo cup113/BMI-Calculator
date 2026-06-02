@@ -1,18 +1,20 @@
 <script lang="ts">
   import { m } from "$lib/paraglide/messages";
   import { getLocale } from "$lib/paraglide/runtime";
+  import { t } from "$lib/i18n/t";
+  import { version } from "../../package.json";
   import {
     getStandard,
     getStandardsByCategory,
     getCategories,
     getDefaultStandardId,
+    getDefaultStandardIdForCategory,
     calculateBMI,
     getWeightUnits,
   } from "$lib/constants";
   import type { Gender, BmiCategory, BmiStandard, ClassificationInput } from "$lib/standards/types";
   import { stageGroups } from "$lib/standards/china-student";
 
-  import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
   import WeightInput from "$lib/components/WeightInput.svelte";
   import HeightInput from "$lib/components/HeightInput.svelte";
   import GenderSelector from "$lib/components/GenderSelector.svelte";
@@ -20,11 +22,6 @@
   import ResultCard from "$lib/components/ResultCard.svelte";
   import PrivacyNotice from "$lib/components/PrivacyNotice.svelte";
   import DataSources from "$lib/components/DataSources.svelte";
-
-  function t(key: string): string {
-    const fn = (m as Record<string, () => string>)[key];
-    return fn ? fn() : key;
-  }
 
   let weight = $state<number | string>("");
   let height = $state<number | string>("");
@@ -80,21 +77,21 @@
       : null
   );
 
-  let idealWeightMin = $derived(
+  let healthyWeightMin = $derived(
     normalBounds ? weightFromBMI(normalBounds.min) : null
   );
-  let idealWeightMax = $derived(
+  let healthyWeightMax = $derived(
     normalBounds ? weightFromBMI(normalBounds.max) : null
   );
 
-  let idealWeightMinConverted = $derived(
-    idealWeightMin !== null ? currentUnit.fromKg(idealWeightMin) : null
+  let healthyWeightMinConverted = $derived(
+    healthyWeightMin !== null ? currentUnit.fromKg(healthyWeightMin) : null
   );
-  let idealWeightMaxConverted = $derived(
-    idealWeightMax !== null ? currentUnit.fromKg(idealWeightMax) : null
+  let healthyWeightMaxConverted = $derived(
+    healthyWeightMax !== null ? currentUnit.fromKg(healthyWeightMax) : null
   );
 
-  let idealWeightUnitLabel = $derived(t(currentUnit.labelKey));
+  let healthyWeightUnitLabel = $derived(t(currentUnit.labelKey));
 
   function weightFromBMI(bmiVal: number): number {
     const mVal = Number(height) / 100;
@@ -105,6 +102,7 @@
     const h = Number(height);
     if (weight && h >= 50 && h <= 300) {
       hasCalculated = true;
+      (window as any).umami?.track("calculate_bmi");
     }
   }
 
@@ -116,13 +114,14 @@
     age = "";
     selectedGrade = "grade-7";
     selectedCategory = "adult";
-    standardId = getDefaultStandardId(getLocale());
+    standardId = getDefaultStandardIdForCategory("adult", getLocale());
     hasCalculated = false;
     zoomedIn = false;
   }
 
   function selectCategory(cat: BmiCategory) {
     selectedCategory = cat;
+    standardId = getDefaultStandardIdForCategory(cat, getLocale());
     hasCalculated = false;
     zoomedIn = false;
   }
@@ -134,15 +133,9 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+<div class="min-h-screen p-4 md:p-8">
   <div class="max-w-md mx-auto">
-    <header class="text-center mb-4">
-      <h1 class="text-3xl font-bold text-slate-800 mb-2">{m.app_title()}</h1>
-      <p class="text-slate-500 mb-4">{m.app_subtitle()}</p>
-      <LanguageSwitcher />
-    </header>
-
-    <section class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+    <section class="bg-surface rounded-2xl shadow-lg p-8 mb-6">
       <WeightInput bind:weight bind:weightUnitId />
       <HeightInput bind:height />
       <GenderSelector bind:gender />
@@ -176,9 +169,9 @@
         {levelBoundsArray}
         {levelLabels}
         bind:zoomedIn
-        {idealWeightMinConverted}
-        {idealWeightMaxConverted}
-        {idealWeightUnitLabel}
+        {healthyWeightMinConverted}
+        {healthyWeightMaxConverted}
+        {healthyWeightUnitLabel}
         {currentStandard}
         ontogglezoom={() => (zoomedIn = !zoomedIn)}
         onreset={handleReset}
@@ -188,8 +181,18 @@
     <PrivacyNotice />
     <DataSources bind:showDataSources />
 
-    <footer class="text-center text-xs text-slate-400 pb-4">
+    <footer class="text-center text-xs text-text-muted pb-4 space-y-1">
       <p>{m.footer_disclaimer()}</p>
+      <p>
+        <a
+          href="https://github.com/cup113/BMI-Calculator"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-text-secondary transition-colors underline underline-offset-2"
+        >{m.footer_github()}</a>
+        <span class="mx-1.5">·</span>
+        <span>{m.footer_version()} {version}</span>
+      </p>
     </footer>
   </div>
 </div>

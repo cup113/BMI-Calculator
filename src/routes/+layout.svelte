@@ -2,6 +2,7 @@
   import "./layout.css";
   import favicon from "$lib/assets/favicon.ico";
   import { m } from "$lib/paraglide/messages";
+  import Header from "$lib/components/Header.svelte";
 
   let { children } = $props();
   const UMAMI_URL = "https://umami.cup11.top/script.js";
@@ -23,4 +24,7 @@
   <script defer src={UMAMI_URL} data-website-id={UMAMI_WEBSITE_ID}></script>
   <title>{m.meta_page_title()}</title>
 </svelte:head>
+
+<Header />
+
 {@render children()}

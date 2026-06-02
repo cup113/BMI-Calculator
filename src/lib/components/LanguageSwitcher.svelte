@@ -3,22 +3,22 @@
   import { getLocale, localizeHref } from "$lib/paraglide/runtime";
 </script>
 
-<div class="flex justify-center gap-2">
+<div class="flex gap-1">
   <a
     href={localizeHref("/", { locale: "zh-CN" })}
     data-sveltekit-reload
-    class="px-3 py-1 text-sm rounded-md font-medium transition {getLocale() === 'zh-CN'
+    class="px-2 py-1 text-sm rounded-md font-medium transition {getLocale() === 'zh-CN'
       ? 'bg-blue-500 text-white'
-      : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}"
+      : 'bg-surface-hover text-text-secondary hover:bg-blue-100 dark:hover:bg-blue-900/40'}"
   >
     {m.lang_zh()}
   </a>
   <a
     href={localizeHref("/", { locale: "en" })}
     data-sveltekit-reload
-    class="px-3 py-1 text-sm rounded-md font-medium transition {getLocale() === 'en'
+    class="px-2 py-1 text-sm rounded-md font-medium transition {getLocale() === 'en'
       ? 'bg-blue-500 text-white'
-      : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}"
+      : 'bg-surface-hover text-text-secondary hover:bg-blue-100 dark:hover:bg-blue-900/40'}"
   >
     {m.lang_en()}
   </a>

@@ -1,11 +1,7 @@
 <script lang="ts">
   import { m } from "$lib/paraglide/messages";
+  import { t } from "$lib/i18n/t";
   import type { Gender } from "$lib/standards/types";
-
-  function t(key: string): string {
-    const fn = (m as Record<string, () => string>)[key];
-    return fn ? fn() : key;
-  }
 
   let { gender = $bindable("male") }: {
     gender: Gender;
@@ -13,7 +9,7 @@
 </script>
 
 <div class="mb-6">
-  <div class="block text-sm font-semibold text-slate-700 mb-3">
+  <div class="block text-sm font-semibold text-text-primary mb-3">
     {m.gender()}
   </div>
   <div class="flex gap-3">
@@ -21,7 +17,7 @@
       onclick={() => (gender = "male")}
       class="flex-1 py-3 px-4 rounded-lg font-medium transition {gender === 'male'
         ? 'bg-blue-500 text-white shadow-md'
-        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"
+        : 'bg-surface-alt text-text-primary hover:bg-surface-hover'}"
     >
       {m.gender_male()}
     </button>
@@ -29,7 +25,7 @@
       onclick={() => (gender = "female")}
       class="flex-1 py-3 px-4 rounded-lg font-medium transition {gender === 'female'
         ? 'bg-pink-500 text-white shadow-md'
-        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"
+        : 'bg-surface-alt text-text-primary hover:bg-surface-hover'}"
     >
       {m.gender_female()}
     </button>

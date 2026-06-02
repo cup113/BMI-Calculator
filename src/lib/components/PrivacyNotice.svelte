@@ -2,13 +2,13 @@
   import { m } from "$lib/paraglide/messages";
 </script>
 
-<section class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+<section class="bg-surface rounded-2xl shadow-lg p-6 mb-6">
   <div class="flex items-start gap-3">
     <div
-      class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center"
+      class="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center"
     >
       <svg
-        class="w-5 h-5 text-green-600"
+        class="w-5 h-5 text-green-600 dark:text-green-400"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -22,10 +22,10 @@
       </svg>
     </div>
     <div>
-      <h3 class="font-semibold text-slate-800 mb-1">
+      <h3 class="font-semibold text-text-primary mb-1">
         {m.privacy_title()}
       </h3>
-      <p class="text-sm text-slate-600 leading-relaxed">
+      <p class="text-sm text-text-secondary leading-relaxed">
         {m.privacy_text()}
       </p>
     </div>

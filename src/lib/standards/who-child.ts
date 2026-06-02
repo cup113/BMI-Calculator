@@ -106,8 +106,8 @@ export const whoChildStandard: BmiStandard = {
   levels,
 
   classify(input: ClassificationInput): ClassificationResult | null {
-    if (!input.bmi || input.bmi <= 0 || input.age === undefined) return null;
-    const isMale = input.gender !== "female";
+    if (!input.bmi || input.bmi <= 0 || input.age === undefined || !input.gender) return null;
+    const isMale = input.gender === "male";
     const row = findRow(input.age, isMale);
     if (!row) return null;
     const idx = classifyByRow(input.bmi, row);
@@ -115,8 +115,8 @@ export const whoChildStandard: BmiStandard = {
   },
 
   weightThresholds(height: number, input: ClassificationInput): Record<string, string> | null {
-    if (!height || height <= 0 || input.age === undefined) return null;
-    const isMale = input.gender !== "female";
+    if (!height || height <= 0 || input.age === undefined || !input.gender) return null;
+    const isMale = input.gender === "male";
     const row = findRow(input.age, isMale);
     if (!row) return null;
     const heightM = height / 100;
@@ -129,8 +129,8 @@ export const whoChildStandard: BmiStandard = {
   },
 
   levelBmiBounds(levelIdx: number, input: ClassificationInput): { min: number; max: number } | null {
-    if (levelIdx < 0 || levelIdx >= levels.length || input.age === undefined) return null;
-    const isMale = input.gender !== "female";
+    if (levelIdx < 0 || levelIdx >= levels.length || input.age === undefined || !input.gender) return null;
+    const isMale = input.gender === "male";
     const row = findRow(input.age, isMale);
     if (!row) return null;
     const bounds = [

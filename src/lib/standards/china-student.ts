@@ -105,17 +105,6 @@ function getThresholds(grade: string, gender: Gender): Thresholds | null {
   return gender === "male" ? entry[0] : entry[1];
 }
 
-const cutoffsByGrade = new Map<string, [number, number, number]>();
-
-for (const grade of studentGrades) {
-  const maleT = bmiThresholds.get(grade.id)![0];
-  const femaleT = bmiThresholds.get(grade.id)![1];
-  const under = Math.min(maleT[0], femaleT[0]);
-  const normal = Math.max(maleT[1], femaleT[1]);
-  const over = Math.max(maleT[2], femaleT[2]);
-  cutoffsByGrade.set(grade.id, [under, normal, over]);
-}
-
 function classifyBMI(bmi: number, grade: string, gender: Gender): number {
   const thresholds = getThresholds(grade, gender);
   if (!thresholds) return 1;
