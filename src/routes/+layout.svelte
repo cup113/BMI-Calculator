@@ -1,25 +1,26 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.ico';
+  import "./layout.css";
+  import favicon from "$lib/assets/favicon.ico";
+  import { m } from "$lib/paraglide/messages";
 
-	let { children } = $props();
-	const UMAMI_URL = "https://umami.cup11.top/script.js"
-	const UMAMI_WEBSITE_ID = "e777187b-38f3-4401-bbcf-068d447b70e9"
+  let { children } = $props();
+  const UMAMI_URL = "https://umami.cup11.top/script.js";
+  const UMAMI_WEBSITE_ID = "e777187b-38f3-4401-bbcf-068d447b70e9";
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<meta name="description" content="免费在线 BMI 计算器，现代 UI，支持男女分龄评估（小学至成人），提供精准体重阈值参考，kg/斤双单位切换，保护隐私无数据上传。" />
-	<meta name="keywords" content="BMI计算器,体重指数,身体质量指数,健康体重,肥胖评估,学生BMI,成人BMI,体重标准,身高体重比" />
-	<meta name="author" content="Jason Li" />
-	<meta property="og:title" content="BMI 计算器 - 分龄健康体重评估" />
-	<meta property="og:description" content="免费在线 BMI 计算器，支持男女分龄评估，提供精准体重阈值参考。" />
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://bmi.cup11.top" />
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="BMI 计算器 - 分龄健康体重评估" />
-	<meta name="twitter:description" content="免费在线 BMI 计算器，支持男女分龄评估，提供精准体重阈值参考。" />
-	<script defer src={UMAMI_URL} data-website-id={UMAMI_WEBSITE_ID}></script>
-	<title>BMI 计算器 - 分龄健康体重评估</title>
+  <link rel="icon" href={favicon} />
+  <meta name="description" content={m.meta_description()} />
+  <meta name="keywords" content={m.meta_keywords()} />
+  <meta name="author" content="Jason Li" />
+  <meta property="og:title" content={m.meta_og_title()} />
+  <meta property="og:description" content={m.meta_og_description()} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bmi.cup11.top" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content={m.meta_twitter_title()} />
+  <meta name="twitter:description" content={m.meta_twitter_description()} />
+  <script defer src={UMAMI_URL} data-website-id={UMAMI_WEBSITE_ID}></script>
+  <title>{m.meta_page_title()}</title>
 </svelte:head>
 {@render children()}
