@@ -60,13 +60,26 @@
     return TEXT_HEX[base] ?? "#475569";
   }
 
+  function averageHex(a: string, b: string): string {
+    const r1 = parseInt(a.slice(1, 3), 16);
+    const g1 = parseInt(a.slice(3, 5), 16);
+    const b1 = parseInt(a.slice(5, 7), 16);
+    const r2 = parseInt(b.slice(1, 3), 16);
+    const g2 = parseInt(b.slice(3, 5), 16);
+    const b2 = parseInt(b.slice(5, 7), 16);
+    const r = Math.round((r1 + r2) / 2);
+    const g = Math.round((g1 + g2) / 2);
+    const bl = Math.round((b1 + b2) / 2);
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${bl.toString(16).padStart(2, "0")}`;
+  }
+
   const CX = 180;
   const CY = 200;
   const R = 160;
   const TICK_INNER = 144;
   const TICK_OUTER = 156;
   const LABEL_R = 118;
-  const BMI_LABEL_R = 168;
+  const BMI_LABEL_R = 132;
   const NEEDLE_TIP_R = TICK_INNER - 4;
 
   interface SegmentData {
@@ -80,6 +93,7 @@
   interface TickData {
     angle: number;
     label: string;
+    color: string;
   }
 
   let gaugeData = $derived.by<{
@@ -111,15 +125,47 @@
         if (startIdx === 0) endIdx = Math.min(2, N - 1);
         else if (endIdx === N - 1) startIdx = Math.max(0, N - 3);
       }
-      visualMin = validBounds[startIdx].min;
-      visualMax = validBounds[endIdx].max;
+
+      if (startIdx === 0 && N >= 2) {
+        const firstBoundary = validBounds[1].min;
+        let step: number;
+        if (N >= 3) {
+          step = Math.round((validBounds[2].min - firstBoundary) * 10) / 10;
+        } else {
+          step = Math.round((validBounds[0].max - validBounds[0].min) * 10) / 10;
+        }
+        visualMin = Math.max(0, Math.round((firstBoundary - step / 2) * 10) / 10);
+      } else {
+        visualMin = validBounds[startIdx].min;
+      }
+
+      if (endIdx === N - 1 && N >= 2) {
+        const lastStep = Math.round((validBounds[N - 1].min - validBounds[N - 2].min) * 10) / 10;
+        visualMax = Math.round((validBounds[N - 1].min + lastStep) * 10) / 10;
+      } else {
+        visualMax = validBounds[endIdx].max;
+      }
     } else {
       startIdx = 0;
       endIdx = N - 1;
-      visualMin = validBounds[0].min;
-      const secondToLast = validBounds[N - 2];
-      const lastCutoff = secondToLast ? secondToLast.max : validBounds[N - 1].min + 5;
-      visualMax = Math.round(lastCutoff * 1.3 * 10) / 10;
+      if (N >= 2) {
+        const firstBoundary = validBounds[1].min;
+        let step: number;
+        if (N >= 3) {
+          step = Math.round((validBounds[2].min - firstBoundary) * 10) / 10;
+        } else {
+          step = Math.round((validBounds[0].max - validBounds[0].min) * 10) / 10;
+        }
+        visualMin = Math.max(0, Math.round((firstBoundary - step / 2) * 10) / 10);
+      } else {
+        visualMin = validBounds[0].min;
+      }
+      if (N >= 2) {
+        const lastStep = Math.round((validBounds[N - 1].min - validBounds[N - 2].min) * 10) / 10;
+        visualMax = Math.round((validBounds[N - 1].min + lastStep) * 10) / 10;
+      } else {
+        visualMax = Math.round((validBounds[0].min + 5) * 10) / 10;
+      }
     }
 
     const totalRange = visualMax - visualMin;
@@ -137,8 +183,8 @@
       if (!b) continue;
       const segMin = i === startIdx ? visualMin : b.min;
       const segMax = i === endIdx ? visualMax : b.max;
-      const a1 = angle(segMax);
-      const a2 = angle(segMin);
+      const a1 = angle(segMin);
+      const a2 = angle(segMax);
       segments.push({
         index: i,
         level: levels[i],
@@ -152,19 +198,51 @@
     const needleAngle = angle(clamped);
 
     const ticks: TickData[] = [];
-    for (let i = startIdx; i <= endIdx; i++) {
+
+    // Collect inner boundary BMI values for extrapolation at edges
+    const innerBmiVals: number[] = [];
+    for (let i = startIdx + 1; i <= endIdx; i++) {
+      const b = validBounds[i];
+      if (b) innerBmiVals.push(b.min);
+    }
+
+    let visualMinLabel: number;
+    let visualMaxLabel: number;
+    if (innerBmiVals.length >= 2) {
+      const stepStart = Math.round((innerBmiVals[1] - innerBmiVals[0]) * 10) / 10;
+      visualMinLabel = Math.max(0, Math.round((innerBmiVals[0] - stepStart / 2) * 10) / 10);
+      const stepEnd = Math.round((innerBmiVals[innerBmiVals.length - 1] - innerBmiVals[innerBmiVals.length - 2]) * 10) / 10;
+      visualMaxLabel = Math.round((innerBmiVals[innerBmiVals.length - 1] + stepEnd) * 10) / 10;
+    } else {
+      visualMinLabel = visualMin;
+      visualMaxLabel = visualMax;
+    }
+
+    // First tick (start anchor)
+    ticks.push({
+      angle: angle(visualMin),
+      label: visualMinLabel.toFixed(1),
+      color: hexColor(levels[startIdx].color),
+    });
+
+    // Inner ticks (at each level boundary)
+    for (let i = startIdx + 1; i <= endIdx; i++) {
       const b = validBounds[i];
       if (!b) continue;
-      if (i > startIdx) {
-        ticks.push({
-          angle: angle(b.min),
-          label: b.min.toFixed(1),
-        });
-      }
+      const leftHex = hexColor(levels[i - 1].color);
+      const rightHex = hexColor(levels[i].color);
+      ticks.push({
+        angle: angle(b.min),
+        label: b.min.toFixed(1),
+        color: averageHex(leftHex, rightHex),
+      });
     }
+
+    // Last tick (end anchor)
     ticks.push({
       angle: angle(visualMax),
-      label: visualMax.toFixed(1),
+      label: visualMaxLabel.toFixed(1),
+      color: hexColor(levels[endIdx].color),
     });
 
     return { segments, ticks, needleAngle, visualMin, visualMax };
@@ -194,10 +272,18 @@
   }
 
   let bgArcPath = $derived(arcPath(Math.PI, 0));
-  let needleTipX = $derived(gaugeData.needleAngle !== null ? CX + (NEEDLE_TIP_R + 3) * Math.cos(gaugeData.needleAngle) : 0);
-  let needleTipY = $derived(gaugeData.needleAngle !== null ? CY - (NEEDLE_TIP_R + 3) * Math.sin(gaugeData.needleAngle) : 0);
-  let needleEndX = $derived(gaugeData.needleAngle !== null ? CX + NEEDLE_TIP_R * Math.cos(gaugeData.needleAngle) : 0);
-  let needleEndY = $derived(gaugeData.needleAngle !== null ? CY - NEEDLE_TIP_R * Math.sin(gaugeData.needleAngle) : 0);
+  let animNeedleAngle = $state<number>(Math.PI);
+
+  $effect(() => {
+    const angle = gaugeData.needleAngle;
+    if (angle === null) return;
+    const id = requestAnimationFrame(() => {
+      animNeedleAngle = angle;
+    });
+    return () => cancelAnimationFrame(id);
+  });
+
+  let labelFontSize = $derived(gaugeData.segments.length > 4 ? "9" : "11");
 </script>
 
 <div class="relative select-none">
@@ -227,56 +313,61 @@
       <path
         d={tickLine(tick.angle)}
         fill="none"
-        stroke="#94a3b8"
+        stroke={tick.color}
         stroke-width="1.5"
+        opacity="0.6"
       />
       {@const pos = labelPos(tick.angle, BMI_LABEL_R)}
       <text
         x={pos.x.toFixed(2)}
         y={(pos.y + 4).toFixed(2)}
         text-anchor="middle"
-        class="fill-slate-500"
+        fill={tick.color}
         font-size="10"
+        font-weight="600"
       >
         {tick.label}
       </text>
     {/each}
 
-    <!-- Level name labels (only in zoom-in mode) -->
-    {#if zoomedIn}
-      {#each gaugeData.segments as seg}
-        {@const lpos = labelPos(seg.midAngle, LABEL_R)}
-        <text
-          x={lpos.x.toFixed(2)}
-          y={(lpos.y + 4).toFixed(2)}
-          text-anchor="middle"
-          font-size="11"
-          font-weight="600"
-          fill={textHexColor(seg.level.color)}
-        >
-          {levelLabels[seg.index] ?? ""}
-        </text>
-      {/each}
-    {/if}
+    <!-- Level name labels -->
+    {#each gaugeData.segments as seg}
+      {@const lpos = labelPos(seg.midAngle, LABEL_R)}
+      <text
+        x={lpos.x.toFixed(2)}
+        y={(lpos.y + 4).toFixed(2)}
+        text-anchor="middle"
+        font-size={labelFontSize}
+        font-weight="600"
+        fill={textHexColor(seg.level.color)}
+        opacity={zoomedIn ? "1" : "0.55"}
+      >
+        {levelLabels[seg.index] ?? ""}
+      </text>
+    {/each}
 
     <!-- Needle -->
     {#if gaugeData.needleAngle !== null}
-      <line
-        x1={CX}
-        y1={CY}
-        x2={needleEndX.toFixed(2)}
-        y2={needleEndY.toFixed(2)}
-        stroke="#1e293b"
-        stroke-width="2.5"
-        stroke-linecap="round"
-      />
-      <!-- Needle tip dot -->
-      <circle
-        cx={needleTipX.toFixed(2)}
-        cy={needleTipY.toFixed(2)}
-        r="4.5"
-        fill="#1e293b"
-      />
+      <g
+        transform="rotate({(-animNeedleAngle * 180 / Math.PI).toFixed(2)}, {CX}, {CY})"
+        style="transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+      >
+        <line
+          x1={CX}
+          y1={CY}
+          x2={CX + NEEDLE_TIP_R}
+          y2={CY}
+          stroke="#1e293b"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+        <circle
+          cx={CX + NEEDLE_TIP_R + 3}
+          cy={CY}
+          r="4.5"
+          fill="#1e293b"
+        />
+      </g>
       <!-- Pivot -->
       <circle cx={CX} cy={CY} r="7" fill="#1e293b" />
       <circle cx={CX} cy={CY} r="3.5" fill="#ffffff" />

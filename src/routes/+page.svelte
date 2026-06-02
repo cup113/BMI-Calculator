@@ -9,7 +9,7 @@
     calculateBMI,
     getWeightUnits,
   } from "$lib/constants";
-  import type { Gender, BmiCategory, ClassificationInput } from "$lib/standards/types";
+  import type { Gender, BmiCategory, BmiStandard, ClassificationInput } from "$lib/standards/types";
   import { stageGroups } from "$lib/standards/china-student";
 
   import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
@@ -35,15 +35,16 @@
   let age = $state<number | string>("");
   let selectedGrade = $state("grade-7");
   let hasCalculated = $state(false);
-  let showCategoryPicker = $state(false);
-  let showStandardPicker = $state(false);
-  let showStagePicker = $state(false);
   let showDataSources = $state(false);
   let zoomedIn = $state(false);
 
   let currentStandard = $derived(getStandard(standardId)!);
-  let subStandards = $derived(getStandardsByCategory(selectedCategory, getLocale()));
   let categories = $derived(getCategories());
+  let standardsMap = $derived(
+    Object.fromEntries(
+      categories.map((c) => [c, getStandardsByCategory(c, getLocale())])
+    ) as Record<BmiCategory, BmiStandard[]>
+  );
   let weightUnits = $derived(getWeightUnits(getLocale()));
   let currentUnit = $derived(weightUnits.find((u) => u.id === weightUnitId) ?? weightUnits[0]);
   let weightKg = $derived(currentUnit.toKg(Number(weight)));
@@ -122,10 +123,6 @@
 
   function selectCategory(cat: BmiCategory) {
     selectedCategory = cat;
-    const subs = getStandardsByCategory(cat, getLocale());
-    if (subs.length > 0) {
-      standardId = subs[0].id;
-    }
     hasCalculated = false;
     zoomedIn = false;
   }
@@ -152,14 +149,11 @@
 
       <ConditionalInputs
         bind:selectedCategory
-        bind:showCategoryPicker
-        bind:showStandardPicker
-        bind:showStagePicker
         bind:standardId
         bind:age
         bind:selectedGrade
         {currentStandard}
-        {subStandards}
+        {standardsMap}
         {categories}
         {stageGroups}
         onselectCategory={selectCategory}

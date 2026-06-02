@@ -1,8 +1,8 @@
 <script lang="ts">
   import { m } from "$lib/paraglide/messages";
-  import type { BmiCategory } from "$lib/standards/types";
-  import type { BmiStandard, BmiLevel, ClassificationInput } from "$lib/standards/types";
+  import type { BmiCategory, BmiStandard } from "$lib/standards/types";
   import type { StageGroup } from "$lib/standards/china-student";
+  import { fly } from "svelte/transition";
 
   function t(key: string): string {
     const fn = (m as Record<string, () => string>)[key];
@@ -11,147 +11,146 @@
 
   let {
     selectedCategory = $bindable("adult"),
-    showCategoryPicker = $bindable(false),
-    showStandardPicker = $bindable(false),
-    showStagePicker = $bindable(false),
     standardId = $bindable(""),
     age = $bindable(""),
     selectedGrade = $bindable("grade-7"),
     currentStandard,
-    subStandards = [],
+    standardsMap = {} as Record<BmiCategory, BmiStandard[]>,
     categories = [],
     stageGroups = [],
     onselectCategory,
     onselectStandard,
   }: {
     selectedCategory: BmiCategory;
-    showCategoryPicker: boolean;
-    showStandardPicker: boolean;
-    showStagePicker: boolean;
     standardId: string;
     age: number | string;
     selectedGrade: string;
     currentStandard: BmiStandard;
-    subStandards: BmiStandard[];
+    standardsMap: Record<BmiCategory, BmiStandard[]>;
     categories: BmiCategory[];
     stageGroups: StageGroup[];
     onselectCategory?: (cat: BmiCategory) => void;
     onselectStandard?: (id: string) => void;
   } = $props();
 
-  function handleClickOutside(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest(".conditional-inputs-container")) {
-      showCategoryPicker = false;
-      showStandardPicker = false;
-      showStagePicker = false;
+  let popoverVisible = $state(false);
+  let popoverX = $state(0);
+  let popoverY = $state(0);
+  let pendingCategory = $state<BmiCategory | null>(null);
+  let prevCategory = $state<BmiCategory>("adult");
+
+  function handleCategoryClick(cat: BmiCategory, event: MouseEvent) {
+    const standards = standardsMap[cat];
+    if (!standards || standards.length === 0) return;
+
+    if (standards.length === 1) {
+      onselectCategory?.(cat);
+      onselectStandard?.(standards[0].id);
+      return;
     }
+
+    pendingCategory = cat;
+    prevCategory = selectedCategory;
+
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    popoverX = rect.left;
+    popoverY = rect.bottom + 4;
+    popoverVisible = true;
+  }
+
+  function handleSelectStandard(id: string) {
+    if (pendingCategory !== null) {
+      onselectCategory?.(pendingCategory);
+    }
+    onselectStandard?.(id);
+    popoverVisible = false;
+    pendingCategory = null;
+  }
+
+  function handleDismiss() {
+    popoverVisible = false;
+    pendingCategory = null;
   }
 </script>
 
-<svelte:window onclick={handleClickOutside} />
-
 <div class="conditional-inputs-container">
-  <!-- Category Selector -->
-  <div class="mb-6 category-picker-container relative">
+  <!-- Category Pills -->
+  <div class="mb-6">
     <div class="block text-sm font-semibold text-slate-700 mb-3">
       {m.category_label()}
     </div>
-    <button
-      onclick={() => (showCategoryPicker = !showCategoryPicker)}
-      class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white flex items-center justify-between"
-    >
-      <span class="font-medium text-slate-700">
-        {t(`category_${selectedCategory}`)}
-      </span>
-      <svg
-        class="w-5 h-5 text-slate-400 transition-transform {showCategoryPicker ? 'rotate-180' : ''}"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
-
-    {#if showCategoryPicker}
-      <div
-        class="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
-      >
-        {#each categories as cat}
-          <button
-            onclick={() => {
-              showCategoryPicker = false;
-              onselectCategory?.(cat);
-            }}
-            class="w-full px-4 py-3 text-left text-sm font-medium transition {cat === selectedCategory
-              ? 'bg-blue-500 text-white'
-              : 'text-slate-700 hover:bg-slate-50'}"
-          >
-            {t(`category_${cat}`)}
-          </button>
-        {/each}
-      </div>
-    {/if}
+    <div class="flex gap-2">
+      {#each categories as cat}
+        <button
+          onclick={(e) => handleCategoryClick(cat, e)}
+          class="flex-1 px-4 py-3 rounded-lg text-sm font-semibold transition border-2 {cat === (pendingCategory ?? selectedCategory)
+            ? 'bg-blue-500 text-white border-blue-500'
+            : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'}"
+        >
+          {t(`category_${cat}`)}
+        </button>
+      {/each}
+    </div>
   </div>
 
-  <!-- Sub-standard Selector (only when category has multiple standards) -->
-  {#if subStandards.length > 1}
-    <div class="mb-6 standard-picker-container relative">
-      <div class="block text-sm font-semibold text-slate-700 mb-3">
-        {m.standard_selector()}
-      </div>
-      <button
-        onclick={() => (showStandardPicker = !showStandardPicker)}
-        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white flex items-center justify-between"
-      >
-        <span class="font-medium text-slate-700">
-          {t(currentStandard.nameKey)}
-        </span>
-        <svg
-          class="w-5 h-5 text-slate-400 transition-transform {showStandardPicker ? 'rotate-180' : ''}"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+  <!-- Standard Popover -->
+  {#if popoverVisible && pendingCategory}
+    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+    <div role="presentation" class="fixed inset-0 z-20" onclick={handleDismiss}></div>
+    <div
+      class="fixed z-30 min-w-48 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
+      style="left: {popoverX}px; top: {popoverY}px"
+      transition:fly={{ duration: 150, y: -8 }}
+    >
+      {#each standardsMap[pendingCategory] as std}
+        <button
+          onclick={() => handleSelectStandard(std.id)}
+          class="w-full px-4 py-3 text-left text-sm font-medium transition {std.id === standardId
+            ? 'bg-blue-500 text-white'
+            : 'text-slate-700 hover:bg-slate-50'}"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {#if showStandardPicker}
-        <div
-          class="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
-        >
-          {#each subStandards as std}
-            <button
-              onclick={() => {
-                showStandardPicker = false;
-                onselectStandard?.(std.id);
-              }}
-              class="w-full px-4 py-3 text-left text-sm font-medium transition {std.id === standardId
-                ? 'bg-blue-500 text-white'
-                : 'text-slate-700 hover:bg-slate-50'}"
-            >
-              {t(std.nameKey)}
-            </button>
-          {/each}
-        </div>
-      {/if}
+          {t(std.nameKey)}
+        </button>
+      {/each}
     </div>
   {/if}
 
-  <!-- Age Input (for WHO Child) -->
-  {#if currentStandard.id === "who-child"}
+  <!-- Grade Picker (inline) -->
+  {#if currentStandard.requiredFields.includes("grade")}
+    <div class="mb-6">
+      <div class="block text-sm font-semibold text-slate-700 mb-3">
+        {m.stage()}
+      </div>
+      {#each stageGroups as group}
+        <div class="mb-3">
+          <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+            {t(group.labelKey)}
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            {#each group.stages as gradeItem}
+              <button
+                onclick={() => { selectedGrade = gradeItem.id }}
+                class="py-2 px-2 rounded-md text-sm font-medium transition {gradeItem.id === selectedGrade
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"
+              >
+                {t(gradeItem.nameKey)}
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/each}
+      <button
+        onclick={() => { selectedGrade = "grade-7" }}
+        class="text-sm font-medium text-slate-400 hover:text-slate-600 transition"
+      >
+        {m.reset()}
+      </button>
+    </div>
+  {/if}
+
+  <!-- Age Input (inline) -->
+  {#if currentStandard.requiredFields.includes("age")}
     <div class="mb-6">
       <div class="block text-sm font-semibold text-slate-700 mb-3">
         {m.age()}
@@ -166,78 +165,6 @@
         max="19"
         class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition"
       />
-    </div>
-  {/if}
-
-  <!-- Grade Picker (for China Student) -->
-  {#if currentStandard.requiredFields.includes("grade")}
-    <div class="mb-6 stage-picker-container relative">
-      <div class="block text-sm font-semibold text-slate-700 mb-3">
-        {m.stage()}
-      </div>
-      <button
-        onclick={() => (showStagePicker = !showStagePicker)}
-        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white flex items-center justify-between"
-      >
-        <span class="font-medium text-slate-700">
-          {t(
-            stageGroups
-              .flatMap((g) => g.stages)
-              .find((s) => s.id === selectedGrade)?.nameKey ?? selectedGrade
-          )}
-        </span>
-        <svg
-          class="w-5 h-5 text-slate-400 transition-transform {showStagePicker ? 'rotate-180' : ''}"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {#if showStagePicker}
-        <div
-          class="absolute z-10 w-full mt-1.5 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
-        >
-          {#each stageGroups as group}
-            <div class="px-3.5 py-3 border-b border-slate-100 last:border-0">
-              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2.5">
-                {t(group.labelKey)}
-              </div>
-              <div class="grid grid-cols-3 gap-2">
-                {#each group.stages as gradeItem}
-                  <button
-                    onclick={() => {
-                      selectedGrade = gradeItem.id;
-                      showStagePicker = false;
-                    }}
-                    class="py-2 px-2 rounded-md text-[13px] font-medium transition"
-                  >
-                    {t(gradeItem.nameKey)}
-                  </button>
-                {/each}
-              </div>
-            </div>
-          {/each}
-          <div class="px-3.5 py-2.5 border-t border-slate-100 bg-slate-50">
-            <button
-              onclick={() => {
-                selectedGrade = "grade-7";
-                showStagePicker = false;
-              }}
-              class="w-full text-[13px] font-medium text-slate-400 hover:text-slate-600 transition"
-            >
-              {m.reset()}
-            </button>
-          </div>
-        </div>
-      {/if}
     </div>
   {/if}
 </div>
