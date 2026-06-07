@@ -177,4 +177,33 @@ describe("computeGaugeData", () => {
     const lastTick = data.ticks[data.ticks.length - 1];
     expect(lastTick.label).toBe("32.0");
   });
+
+  it("zoomed in at left edge expands to 3 segments", () => {
+    const data = computeGaugeData(levels, bounds, 14, 0, true);
+    expect(data.segments.length).toBe(3);
+    expect(data.segments[0].index).toBe(0);
+    expect(data.segments[2].index).toBe(2);
+  });
+
+  it("zoomed in at right edge expands to 3 segments", () => {
+    const data = computeGaugeData(levels, bounds, 35, 3, true);
+    expect(data.segments.length).toBe(3);
+    expect(data.segments[0].index).toBe(1);
+    expect(data.segments[2].index).toBe(3);
+  });
+
+  it("handles totalRange <= 0 with duplicate min/max", () => {
+    const flatBounds = [{ min: 20, max: 20 }, { min: 20, max: 20 }];
+    const data = computeGaugeData(levels.slice(0, 2), flatBounds, 20, 0, false);
+    expect(data.segments).toHaveLength(0);
+    expect(data.needleAngle).toBeNull();
+  });
+
+  it("supports isDark dark mode for hexColor", () => {
+    expect(hexColor("bg-blue-500", true)).toBe("#60a5fa");
+  });
+
+  it("supports isDark dark mode for textHexColor", () => {
+    expect(textHexColor("bg-green-500", true)).toBe("#4ade80");
+  });
 });

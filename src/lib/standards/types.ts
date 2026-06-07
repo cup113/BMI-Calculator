@@ -7,6 +7,7 @@ export interface BmiLevel {
   color: string;
   lightColor: string;
   textColor: string;
+  textColorDark?: string;
   borderColor: string;
 }
 

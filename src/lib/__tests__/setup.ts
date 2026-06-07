@@ -25,5 +25,10 @@ vi.mock("$lib/paraglide/runtime", () => {
     setLocale: vi.fn((locale: string) => { currentLocale = locale; }),
     getLocale: vi.fn(() => currentLocale),
     localizeHref: vi.fn((href: string) => href),
+    deLocalizeUrl: vi.fn((url: string | URL) => {
+      const u = typeof url === "string" ? new URL(url) : url;
+      return { pathname: u.pathname };
+    }),
+    getTextDirection: vi.fn((locale: string) => (locale === "ar" ? "rtl" : "ltr")),
   };
 });

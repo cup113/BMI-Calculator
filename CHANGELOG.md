@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.3.0] — 2026-06-08
+
+### Tests
+
+- **Push test coverage above 80%** — Statements 78.61% → 87.24%, Branches 66.83% → 81.7%. Add 11 new test files and 68 new tests (208 total).
+- Cover 4 Phase-1 low-hanging-fruit targets (`+layout.ts`, `hooks.ts`, `Header.svelte`, `theme.svelte.ts`) to cross the 80% threshold.
+- Add component tests for `ThemeToggle`, `AgeInput`, `GradeInput`, `CategorySelector`, `StandardSwitcher`, `SemicircleGauge`, and `hooks.server.ts`.
+- Fill branch gaps in `gauge-math` (zoomed-in edge cases, dark mode), `LanguageSwitcher` (en locale), `ResultCard` (dark mode textColor), and all 5 standards (null-guard edge cases).
+- Add `textColorDark?` optional field to `BmiLevel` for dark-mode-aware rendering.
+
 ## [5.2.0] — 2026-06-07
 
 ### Architecture
@@ -46,6 +56,7 @@
 
 - **Vitest unit testing** — 40 unit tests covering all core BMI calculation, threshold lookup, classification, and position logic.
 
+[5.3.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.3.0
 [5.2.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.2.0
 [5.1.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.1.0
 [5.0.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.0.0

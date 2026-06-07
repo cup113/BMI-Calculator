@@ -397,5 +397,63 @@ describe("levelBmiBounds", () => {
       expect(b.min).toBeGreaterThan(0);
       expect(b.max).toBeGreaterThan(b.min);
     });
+
+    it("returns null classify for invalid bmi", () => {
+      expect(whoChildStandard.classify({ bmi: 0, gender: "male", age: 10 })).toBeNull();
+    });
+
+    it("returns null weightThresholds for zero height", () => {
+      expect(whoChildStandard.weightThresholds(0, { bmi: 18, gender: "male", age: 10 })).toBeNull();
+    });
+  });
+
+  describe("standards null-guard edge cases", () => {
+    it("chinaAdult classify returns null for zero bmi", () => {
+      expect(chinaAdultStandard.classify({ bmi: 0 })).toBeNull();
+    });
+
+    it("chinaAdult weightThresholds returns null for zero height", () => {
+      expect(chinaAdultStandard.weightThresholds(0, { bmi: 22 })).toBeNull();
+    });
+
+    it("chinaAdult levelBmiBounds returns null for out of range", () => {
+      expect(chinaAdultStandard.levelBmiBounds(-1, { bmi: 22 })).toBeNull();
+    });
+
+    it("chinaElderly classify returns null for zero bmi", () => {
+      expect(chinaElderlyStandard.classify({ bmi: 0 })).toBeNull();
+    });
+
+    it("chinaElderly weightThresholds returns null for zero height", () => {
+      expect(chinaElderlyStandard.weightThresholds(0, { bmi: 22 })).toBeNull();
+    });
+
+    it("chinaElderly levelBmiBounds returns null for out of range", () => {
+      expect(chinaElderlyStandard.levelBmiBounds(-1, { bmi: 22 })).toBeNull();
+    });
+
+    it("chinaStudent classify returns null when missing gender", () => {
+      expect(chinaStudentStandard.classify({ bmi: 22, grade: "grade-7" })).toBeNull();
+    });
+
+    it("chinaStudent weightThresholds returns null when missing grade", () => {
+      expect(chinaStudentStandard.weightThresholds(170, { bmi: 22, gender: "male" })).toBeNull();
+    });
+
+    it("chinaStudent levelBmiBounds returns null when missing gender", () => {
+      expect(chinaStudentStandard.levelBmiBounds(0, { bmi: 22 })).toBeNull();
+    });
+
+    it("whoChild classify returns null for missing age", () => {
+      expect(whoChildStandard.classify({ bmi: 22, gender: "male" })).toBeNull();
+    });
+
+    it("whoChild weightThresholds returns null for missing gender", () => {
+      expect(whoChildStandard.weightThresholds(170, { bmi: 22, age: 10 })).toBeNull();
+    });
+
+    it("whoChild levelBmiBounds returns null for missing age", () => {
+      expect(whoChildStandard.levelBmiBounds(0, { bmi: 22, gender: "male" })).toBeNull();
+    });
   });
 });

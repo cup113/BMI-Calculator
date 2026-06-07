@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getDefaultStandardIdForCategory, getCategories } from "../standards/registry";
+import { getDefaultStandardIdForCategory, getCategories, getOrderedStandards, getStandardsByCategory } from "../standards/registry";
 
 describe("Registry uncovered branches", () => {
   describe("getDefaultStandardIdForCategory", () => {
@@ -31,6 +31,20 @@ describe("Registry uncovered branches", () => {
   describe("getCategories", () => {
     it("returns student, adult, senior", () => {
       expect(getCategories()).toEqual(["student", "adult", "senior"]);
+    });
+  });
+
+  describe("getOrderedStandards", () => {
+    it("uses fallback for unknown locale", () => {
+      const result = getOrderedStandards("unknown");
+      expect(result.length).toBe(5);
+    });
+  });
+
+  describe("getStandardsByCategory", () => {
+    it("uses fallback for unknown locale", () => {
+      const result = getStandardsByCategory("adult", "unknown");
+      expect(result.length).toBe(2);
     });
   });
 });

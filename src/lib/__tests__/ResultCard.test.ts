@@ -6,13 +6,14 @@ import type { ClassificationResult, BmiLevel, BmiStandard } from "$lib/standards
 
 afterEach(() => cleanup());
 
-function makeLevel(id: string, color: string, textColor: string): BmiLevel {
+function makeLevel(id: string, color: string, textColor: string, textColorDark?: string): BmiLevel {
   return {
     id,
     nameKey: `level_${id}`,
     color,
     lightColor: color.replace("bg-", "bg-").replace(/(\d+)/, "100"),
     textColor,
+    textColorDark,
     borderColor: color.replace("bg-", "border-"),
   };
 }
@@ -121,5 +122,39 @@ describe("ResultCard", () => {
       currentStandard: mockStandard,
     });
     expect(screen.getByText("recalculate")).toBeTruthy();
+  });
+
+  describe("dark mode", () => {
+    const darkLevel = makeLevel("normal", "bg-green-500", "text-green-600", "text-green-400");
+    const darkResult: ClassificationResult = { level: darkLevel, index: 1 };
+
+    it("uses textColorDark when theme is dark", async () => {
+      const { theme } = await import("$lib/theme.svelte");
+      const orig = theme.value;
+      theme.value = "dark";
+      try {
+        const { container } = render(ResultCard, {
+          bmi: 22.5,
+          result: darkResult,
+          levelBoundsArray: [
+            { min: 10, max: 18.5 },
+            { min: 18.5, max: 24 },
+            { min: 24, max: 28 },
+            { min: 28, max: 50 },
+          ],
+          levelLabels: ["underweight", "normal", "overweight", "obese"],
+          zoomedIn: false,
+          healthyWeightMinConverted: null,
+          healthyWeightMaxConverted: null,
+          healthyWeightUnitLabel: "kg",
+          currentStandard: mockStandard,
+        });
+
+        const textEl = container.querySelector('[class*="text-green"]');
+        expect(textEl?.className).toContain("text-green-400");
+      } finally {
+        theme.value = orig;
+      }
+    });
   });
 });
