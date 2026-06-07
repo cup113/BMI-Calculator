@@ -98,6 +98,124 @@ export interface GaugeData {
   visualMax: number;
 }
 
+function computeVisibleRange(
+  levels: BmiLevel[],
+  validBounds: { min: number; max: number }[],
+  currentIndex: number,
+  zoomedIn: boolean
+): { startIdx: number; endIdx: number; visualMin: number; visualMax: number } {
+  const N = levels.length;
+
+  let startIdx: number;
+  let endIdx: number;
+  if (zoomedIn) {
+    startIdx = Math.max(0, currentIndex - 1);
+    endIdx = Math.min(N - 1, currentIndex + 1);
+    if (endIdx - startIdx < 2 && N >= 3) {
+      if (startIdx === 0) endIdx = Math.min(2, N - 1);
+      else if (endIdx === N - 1) startIdx = Math.max(0, N - 3);
+    }
+  } else {
+    startIdx = 0;
+    endIdx = N - 1;
+  }
+
+  const atStartEdge = startIdx === 0;
+  const atEndEdge = endIdx === N - 1;
+
+  let visualMin: number;
+  if (atStartEdge && N >= 2) {
+    const firstBoundary = validBounds[1].min;
+    let step: number;
+    if (N >= 3) {
+      step = Math.round((validBounds[2].min - firstBoundary) * 10) / 10;
+    } else {
+      step = Math.round((validBounds[0].max - validBounds[0].min) * 10) / 10;
+    }
+    visualMin = Math.max(0, Math.round((firstBoundary - step / 2) * 10) / 10);
+  } else if (atStartEdge) {
+    visualMin = validBounds[0].min;
+  } else {
+    visualMin = validBounds[startIdx].min;
+  }
+
+  let visualMax: number;
+  if (atEndEdge && N >= 2) {
+    const lastStep = Math.round((validBounds[N - 1].min - validBounds[N - 2].min) * 10) / 10;
+    visualMax = Math.round((validBounds[N - 1].min + lastStep) * 10) / 10;
+  } else if (atEndEdge) {
+    visualMax = Math.round((validBounds[0].min + 5) * 10) / 10;
+  } else {
+    visualMax = validBounds[endIdx].max;
+  }
+
+  return { startIdx, endIdx, visualMin, visualMax };
+}
+
+function buildTicks(
+  validBounds: { min: number; max: number }[],
+  startIdx: number,
+  endIdx: number,
+  N: number,
+  levels: BmiLevel[],
+  angleFn: (bmiVal: number) => number,
+  isDark: boolean,
+  visualMin: number,
+  visualMax: number
+): TickData[] {
+  const atStartEdge = startIdx === 0;
+  const atEndEdge = endIdx === N - 1;
+
+  const innerBmiVals: number[] = [];
+  for (let i = startIdx + 1; i <= endIdx; i++) {
+    const b = validBounds[i];
+    if (b) innerBmiVals.push(b.min);
+  }
+
+  let visualMinLabel: number;
+  let visualMaxLabel: number;
+  if (atStartEdge && N >= 2 && innerBmiVals.length >= 2) {
+    const stepStart = Math.round((innerBmiVals[1] - innerBmiVals[0]) * 10) / 10;
+    visualMinLabel = Math.max(0, Math.round((innerBmiVals[0] - stepStart / 2) * 10) / 10);
+  } else {
+    visualMinLabel = visualMin;
+  }
+  if (atEndEdge && N >= 2 && innerBmiVals.length >= 2) {
+    const stepEnd = Math.round((innerBmiVals[innerBmiVals.length - 1] - innerBmiVals[innerBmiVals.length - 2]) * 10) / 10;
+    visualMaxLabel = Math.round((innerBmiVals[innerBmiVals.length - 1] + stepEnd) * 10) / 10;
+  } else {
+    visualMaxLabel = visualMax;
+  }
+
+  const ticks: TickData[] = [];
+
+  ticks.push({
+    angle: angleFn(visualMin),
+    label: visualMinLabel.toFixed(1),
+    color: hexColor(levels[startIdx].color, isDark),
+  });
+
+  for (let i = startIdx + 1; i <= endIdx; i++) {
+    const b = validBounds[i];
+    if (!b) continue;
+    const leftHex = hexColor(levels[i - 1].color, isDark);
+    const rightHex = hexColor(levels[i].color, isDark);
+    ticks.push({
+      angle: angleFn(b.min),
+      label: b.min.toFixed(1),
+      color: averageHex(leftHex, rightHex),
+    });
+  }
+
+  ticks.push({
+    angle: angleFn(visualMax),
+    label: visualMaxLabel.toFixed(1),
+    color: hexColor(levels[endIdx].color, isDark),
+  });
+
+  return ticks;
+}
+
 export function computeGaugeData(
   levels: BmiLevel[],
   levelBounds: ({ min: number; max: number } | null)[],
@@ -116,60 +234,9 @@ export function computeGaugeData(
     return { segments: [], ticks: [], needleAngle: null, visualMin: 0, visualMax: 0 };
   }
 
-  let startIdx: number;
-  let endIdx: number;
-  let visualMin: number;
-  let visualMax: number;
-
-  if (zoomedIn) {
-    startIdx = Math.max(0, currentIndex - 1);
-    endIdx = Math.min(N - 1, currentIndex + 1);
-    if (endIdx - startIdx < 2 && N >= 3) {
-      if (startIdx === 0) endIdx = Math.min(2, N - 1);
-      else if (endIdx === N - 1) startIdx = Math.max(0, N - 3);
-    }
-
-    if (startIdx === 0 && N >= 2) {
-      const firstBoundary = validBounds[1].min;
-      let step: number;
-      if (N >= 3) {
-        step = Math.round((validBounds[2].min - firstBoundary) * 10) / 10;
-      } else {
-        step = Math.round((validBounds[0].max - validBounds[0].min) * 10) / 10;
-      }
-      visualMin = Math.max(0, Math.round((firstBoundary - step / 2) * 10) / 10);
-    } else {
-      visualMin = validBounds[startIdx].min;
-    }
-
-    if (endIdx === N - 1 && N >= 2) {
-      const lastStep = Math.round((validBounds[N - 1].min - validBounds[N - 2].min) * 10) / 10;
-      visualMax = Math.round((validBounds[N - 1].min + lastStep) * 10) / 10;
-    } else {
-      visualMax = validBounds[endIdx].max;
-    }
-  } else {
-    startIdx = 0;
-    endIdx = N - 1;
-    if (N >= 2) {
-      const firstBoundary = validBounds[1].min;
-      let step: number;
-      if (N >= 3) {
-        step = Math.round((validBounds[2].min - firstBoundary) * 10) / 10;
-      } else {
-        step = Math.round((validBounds[0].max - validBounds[0].min) * 10) / 10;
-      }
-      visualMin = Math.max(0, Math.round((firstBoundary - step / 2) * 10) / 10);
-    } else {
-      visualMin = validBounds[0].min;
-    }
-    if (N >= 2) {
-      const lastStep = Math.round((validBounds[N - 1].min - validBounds[N - 2].min) * 10) / 10;
-      visualMax = Math.round((validBounds[N - 1].min + lastStep) * 10) / 10;
-    } else {
-      visualMax = Math.round((validBounds[0].min + 5) * 10) / 10;
-    }
-  }
+  const { startIdx, endIdx, visualMin, visualMax } = computeVisibleRange(
+    levels, validBounds, currentIndex, zoomedIn
+  );
 
   const totalRange = visualMax - visualMin;
   if (totalRange <= 0) {
@@ -200,49 +267,9 @@ export function computeGaugeData(
   const clamped = Math.max(visualMin, Math.min(visualMax, bmi));
   const needleAngle = angle(clamped);
 
-  const ticks: TickData[] = [];
-
-  const innerBmiVals: number[] = [];
-  for (let i = startIdx + 1; i <= endIdx; i++) {
-    const b = validBounds[i];
-    if (b) innerBmiVals.push(b.min);
-  }
-
-  let visualMinLabel: number;
-  let visualMaxLabel: number;
-  if (innerBmiVals.length >= 2) {
-    const stepStart = Math.round((innerBmiVals[1] - innerBmiVals[0]) * 10) / 10;
-    visualMinLabel = Math.max(0, Math.round((innerBmiVals[0] - stepStart / 2) * 10) / 10);
-    const stepEnd = Math.round((innerBmiVals[innerBmiVals.length - 1] - innerBmiVals[innerBmiVals.length - 2]) * 10) / 10;
-    visualMaxLabel = Math.round((innerBmiVals[innerBmiVals.length - 1] + stepEnd) * 10) / 10;
-  } else {
-    visualMinLabel = visualMin;
-    visualMaxLabel = visualMax;
-  }
-
-  ticks.push({
-    angle: angle(visualMin),
-    label: visualMinLabel.toFixed(1),
-    color: hexColor(levels[startIdx].color, isDark),
-  });
-
-  for (let i = startIdx + 1; i <= endIdx; i++) {
-    const b = validBounds[i];
-    if (!b) continue;
-    const leftHex = hexColor(levels[i - 1].color, isDark);
-    const rightHex = hexColor(levels[i].color, isDark);
-    ticks.push({
-      angle: angle(b.min),
-      label: b.min.toFixed(1),
-      color: averageHex(leftHex, rightHex),
-    });
-  }
-
-  ticks.push({
-    angle: angle(visualMax),
-    label: visualMaxLabel.toFixed(1),
-    color: hexColor(levels[endIdx].color, isDark),
-  });
+  const ticks = buildTicks(
+    validBounds, startIdx, endIdx, N, levels, angle, isDark, visualMin, visualMax
+  );
 
   return { segments, ticks, needleAngle, visualMin, visualMax };
 }

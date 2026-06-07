@@ -3,22 +3,26 @@
   import { getLocale } from "$lib/paraglide/runtime";
   import { t } from "$lib/i18n/t";
   import { version } from "../../package.json";
+  import { calculateBMI } from "$lib/bmi";
+  import { getWeightUnits } from "$lib/units";
   import {
     getStandard,
     getStandardsByCategory,
     getCategories,
     getDefaultStandardId,
     getDefaultStandardIdForCategory,
-    calculateBMI,
-    getWeightUnits,
-  } from "$lib/constants";
+  } from "$lib/standards/registry";
   import type { Gender, BmiCategory, BmiStandard, ClassificationInput } from "$lib/standards/types";
+  import { computeHealthyWeightRange } from "$lib/healthy-weight-range";
   import { stageGroups } from "$lib/standards/china-student";
 
   import WeightInput from "$lib/components/WeightInput.svelte";
   import HeightInput from "$lib/components/HeightInput.svelte";
   import GenderSelector from "$lib/components/GenderSelector.svelte";
-  import ConditionalInputs from "$lib/components/ConditionalInputs.svelte";
+  import CategorySelector from "$lib/components/CategorySelector.svelte";
+  import StandardSwitcher from "$lib/components/StandardSwitcher.svelte";
+  import GradeInput from "$lib/components/GradeInput.svelte";
+  import AgeInput from "$lib/components/AgeInput.svelte";
   import ResultCard from "$lib/components/ResultCard.svelte";
   import PrivacyNotice from "$lib/components/PrivacyNotice.svelte";
   import DataSources from "$lib/components/DataSources.svelte";
@@ -37,6 +41,7 @@
 
   let currentStandard = $derived(getStandard(standardId)!);
   let categories = $derived(getCategories());
+  let currentStandards = $derived(standardsMap[selectedCategory] ?? []);
   let standardsMap = $derived(
     Object.fromEntries(
       categories.map((c) => [c, getStandardsByCategory(c, getLocale())])
@@ -67,36 +72,9 @@
     currentStandard.levels.map((l) => t(l.nameKey))
   );
 
-  let normalLevelIndex = $derived(
-    currentStandard.levels.findIndex((l) => l.id === "normal")
+  let healthyWeightRange = $derived(
+    computeHealthyWeightRange(Number(height), currentStandard, classifyInput, currentUnit)
   );
-
-  let normalBounds = $derived(
-    normalLevelIndex >= 0
-      ? currentStandard.levelBmiBounds(normalLevelIndex, classifyInput)
-      : null
-  );
-
-  let healthyWeightMin = $derived(
-    normalBounds ? weightFromBMI(normalBounds.min) : null
-  );
-  let healthyWeightMax = $derived(
-    normalBounds ? weightFromBMI(normalBounds.max) : null
-  );
-
-  let healthyWeightMinConverted = $derived(
-    healthyWeightMin !== null ? currentUnit.fromKg(healthyWeightMin) : null
-  );
-  let healthyWeightMaxConverted = $derived(
-    healthyWeightMax !== null ? currentUnit.fromKg(healthyWeightMax) : null
-  );
-
-  let healthyWeightUnitLabel = $derived(t(currentUnit.labelKey));
-
-  function weightFromBMI(bmiVal: number): number {
-    const mVal = Number(height) / 100;
-    return bmiVal * mVal * mVal;
-  }
 
   function handleCalculate() {
     const h = Number(height);
@@ -140,18 +118,33 @@
       <HeightInput bind:height />
       <GenderSelector bind:gender />
 
-      <ConditionalInputs
-        bind:selectedCategory
-        bind:standardId
-        bind:age
-        bind:selectedGrade
-        {currentStandard}
-        {standardsMap}
-        {categories}
-        {stageGroups}
-        onselectCategory={selectCategory}
-        onselectStandard={selectStandard}
-      />
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <span class="block text-sm font-semibold text-text-primary">
+            {m.category_label()}
+          </span>
+          <StandardSwitcher
+            {standardId}
+            {currentStandard}
+            currentStandards={currentStandards}
+            onselectStandard={selectStandard}
+          />
+        </div>
+        <CategorySelector
+          selectedCategory={selectedCategory}
+            {categories}
+            {standardsMap}
+            onselectCategory={selectCategory}
+        />
+      </div>
+
+      {#if currentStandard.requiredFields.includes("grade")}
+        <GradeInput bind:selectedGrade {stageGroups} />
+      {/if}
+
+      {#if currentStandard.requiredFields.includes("age")}
+        <AgeInput bind:age />
+      {/if}
 
       <button
         onclick={handleCalculate}
@@ -169,9 +162,9 @@
         {levelBoundsArray}
         {levelLabels}
         bind:zoomedIn
-        {healthyWeightMinConverted}
-        {healthyWeightMaxConverted}
-        {healthyWeightUnitLabel}
+        healthyWeightMinConverted={healthyWeightRange?.min ?? null}
+        healthyWeightMaxConverted={healthyWeightRange?.max ?? null}
+        healthyWeightUnitLabel={healthyWeightRange?.unitLabel ?? ""}
         {currentStandard}
         ontogglezoom={() => (zoomedIn = !zoomedIn)}
         onreset={handleReset}

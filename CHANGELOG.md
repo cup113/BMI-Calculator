@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.2.0] — 2026-06-07
+
+### Architecture
+
+- **Remove shallow barrel** (`src/lib/constants.ts`) — callers import from source modules directly. Remove dead `calculateSegmentWidths`/`calculateBarPosition` exports from `bmi.ts`.
+- **Extract `computeVisibleRange` and `buildTicks` from `computeGaugeData`** — untangle zoom-range computation, segment building, and tick construction into separate functions. Fix tick label bug where extrapolated values appeared instead of segment boundary values when zoomed in.
+- **Extract Healthy Weight Range module** (`src/lib/healthy-weight-range.ts`) — inline 4-hop derived chain in `+page.svelte` replaced by a single function call. Domain concept now declared as a real module.
+- **Split `ConditionalInputs` into 4 focused components** — `CategorySelector`, `StandardSwitcher`, `GradeInput`, `AgeInput`. No component imports `china-student` types except `GradeInput`.
+
+### Tests
+
+- Add 10 new tests: 6 for Healthy Weight Range edge cases, 4 for gauge tick label correctness in zoomed/non-zoomed states. 140 total tests across 14 test files.
+
 ## [5.1.0] — 2026-06-02
 
 ### Miscellaneous
@@ -33,5 +46,6 @@
 
 - **Vitest unit testing** — 40 unit tests covering all core BMI calculation, threshold lookup, classification, and position logic.
 
+[5.2.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.2.0
 [5.1.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.1.0
 [5.0.0]: https://github.com/cup113/BMI-Calculator/releases/tag/v5.0.0

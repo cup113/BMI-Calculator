@@ -153,4 +153,28 @@ describe("computeGaugeData", () => {
     expect(data.segments).toHaveLength(0);
     expect(data.needleAngle).toBeNull();
   });
+
+  it("zoomed in, not at right edge — labels show actual segment boundary, not extrapolated", () => {
+    const data = computeGaugeData(levels, bounds, 22, 1, true);
+    const lastTick = data.ticks[data.ticks.length - 1];
+    expect(lastTick.label).toBe("28.0");
+  });
+
+  it("zoomed in, at left edge — left tick label uses extrapolation", () => {
+    const data = computeGaugeData(levels, bounds, 22, 1, true);
+    const firstTick = data.ticks[0];
+    expect(firstTick.label).toBe("15.8");
+  });
+
+  it("non-zoomed — both edge labels use extrapolation", () => {
+    const data = computeGaugeData(levels, bounds, 22, 1, false);
+    expect(data.ticks[0].label).toBe("15.8");
+    expect(data.ticks[data.ticks.length - 1].label).toBe("32.0");
+  });
+
+  it("zoomed in, at right edge — right tick label uses extrapolation", () => {
+    const data = computeGaugeData(levels, bounds, 26, 2, true);
+    const lastTick = data.ticks[data.ticks.length - 1];
+    expect(lastTick.label).toBe("32.0");
+  });
 });

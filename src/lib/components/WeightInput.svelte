@@ -1,7 +1,7 @@
 <script lang="ts">
   import { m } from "$lib/paraglide/messages";
   import { t } from "$lib/i18n/t";
-  import { getWeightUnits, convertWeightText } from "$lib/constants";
+  import { getWeightUnits, convertWeightText } from "$lib/units";
   import { getLocale } from "$lib/paraglide/runtime";
 
   let { weight = $bindable(""), weightUnitId = $bindable("kg") }: {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateBMI, calculateSegmentWidths, calculateBarPosition } from "../bmi";
+import { calculateBMI } from "../bmi";
 import { getWeightUnits, convertWeightText } from "../units";
 import { whoAdultStandard } from "../standards/who-adult";
 import { chinaAdultStandard } from "../standards/china-adult";
@@ -224,58 +224,6 @@ describe("Registry", () => {
   it("getAllStandards returns correct standard ids", () => {
     const ids = getAllStandards().map((s) => s.id).sort();
     expect(ids).toEqual(["china-adult", "china-elderly", "china-student", "who-adult", "who-child"]);
-  });
-});
-
-describe("calculateSegmentWidths", () => {
-  it("returns all 100 for single level", () => {
-    expect(calculateSegmentWidths(0, 1)).toEqual([100]);
-  });
-
-  it("sets current index to 70 for 4-level", () => {
-    expect(calculateSegmentWidths(0, 4)).toEqual([70, 10, 10, 10]);
-    expect(calculateSegmentWidths(1, 4)).toEqual([10, 70, 10, 10]);
-    expect(calculateSegmentWidths(2, 4)).toEqual([10, 10, 70, 10]);
-    expect(calculateSegmentWidths(3, 4)).toEqual([10, 10, 10, 70]);
-  });
-
-  it("sets current index to 70 for 6-level", () => {
-    const widths = calculateSegmentWidths(2, 6);
-    expect(widths[2]).toBe(70);
-    expect(widths.filter((w) => w !== 70)).toHaveLength(5);
-    widths.forEach((w) => expect(w).toBeGreaterThan(0));
-  });
-});
-
-describe("calculateBarPosition", () => {
-  it("returns 0 when bmi is 0", () => {
-    expect(calculateBarPosition(0, { min: 18.5, max: 24 }, [10, 70, 10, 10], 1)).toBe(0);
-  });
-
-  it("places pointer at start of segment when bmi equals min", () => {
-    expect(calculateBarPosition(18.5, { min: 18.5, max: 24 }, [10, 70, 10, 10], 1)).toBe(10);
-  });
-
-  it("places pointer at end of segment when bmi equals max", () => {
-    expect(calculateBarPosition(24, { min: 18.5, max: 24 }, [10, 70, 10, 10], 1)).toBe(80);
-  });
-
-  it("places pointer mid-segment", () => {
-    const pos = calculateBarPosition(21.25, { min: 18.5, max: 24 }, [10, 70, 10, 10], 1);
-    expect(pos).toBeGreaterThan(10);
-    expect(pos).toBeLessThan(80);
-  });
-
-  it("handles first level", () => {
-    const pos = calculateBarPosition(14, { min: 10, max: 18.5 }, [70, 10, 10, 10], 0);
-    expect(pos).toBeGreaterThan(0);
-    expect(pos).toBeLessThan(70);
-  });
-
-  it("handles last level", () => {
-    const pos = calculateBarPosition(35, { min: 28, max: 50 }, [10, 10, 10, 70], 3);
-    expect(pos).toBeGreaterThan(40);
-    expect(pos).toBeLessThanOrEqual(100);
   });
 });
 

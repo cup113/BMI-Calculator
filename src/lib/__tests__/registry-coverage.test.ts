@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { getDefaultStandardIdForCategory, getCategories } from "../standards/registry";
-import { calculateBarPosition } from "../bmi";
 
 describe("Registry uncovered branches", () => {
   describe("getDefaultStandardIdForCategory", () => {
@@ -26,13 +25,6 @@ describe("Registry uncovered branches", () => {
 
     it("returns china-elderly for en senior", () => {
       expect(getDefaultStandardIdForCategory("senior", "en")).toBe("china-elderly");
-    });
-  });
-
-  describe("calculateBarPosition edge case", () => {
-    it("returns 0.5 of segment when range is zero", () => {
-      const pos = calculateBarPosition(20, { min: 20, max: 20 }, [50, 50], 1);
-      expect(pos).toBe(75);
     });
   });
 
